@@ -16,7 +16,7 @@ import com.daikit.graphql.spring.GQLIOUtils;
 import com.daikit.graphql.spring.GQLRequestHandler;
 import com.daikit.graphql.utils.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * GRaphQL simple controller
@@ -32,7 +32,7 @@ public class GQLController {
 	@Autowired
 	private GQLRequestHandler gqlRequestHandler;
 	@Autowired
-	private ObjectMapper gqlObjectMapper;
+	private ObjectWriter gqlObjectWriter;
 
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 	// METHODS
@@ -44,7 +44,7 @@ public class GQLController {
 	 * @param response
 	 *            the {@link HttpServletResponse}
 	 */
-	@RequestMapping(value = "/graphql/alltypes", produces = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "/graphql/introspection", produces = MediaType.APPLICATION_JSON_VALUE)
 	public void introspection(final HttpServletResponse response) {
 		try {
 			gqlRequestHandler.handleIntrospectionRequest(response);
@@ -54,7 +54,8 @@ public class GQLController {
 	}
 
 	/**
-	 * Get schema instrospection fragments for GraphQL engine initialization
+	 * Get schema instrospection fragments for client GraphQL engine
+	 * initialization (like Apollo for example)
 	 *
 	 * @param response
 	 *            the {@link HttpServletResponse}
@@ -93,7 +94,7 @@ public class GQLController {
 	private void handleError(final HttpServletResponse response, Exception e) {
 		try {
 			GQLIOUtils.writeInResponse(response,
-					gqlObjectMapper.writeValueAsString(new GQLExecutionResult(gqlErrorProcessor.handleError(e))));
+					gqlObjectWriter.writeValueAsString(new GQLExecutionResult(gqlErrorProcessor.handleError(e))));
 		} catch (final JsonProcessingException e1) {
 			throw new GQLException(Message.format("An error happened while writing error result {}", e1.getMessage()),
 					e1);

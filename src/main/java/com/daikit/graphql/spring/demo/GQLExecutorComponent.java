@@ -11,7 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import com.daikit.graphql.constants.GQLSchemaConstants;
@@ -30,7 +29,7 @@ import com.daikit.graphql.dynamicattribute.IGQLDynamicAttributeSetter;
 import com.daikit.graphql.execution.GQLErrorProcessor;
 import com.daikit.graphql.execution.GQLExecutor;
 import com.daikit.graphql.execution.IGQLExecutorCallback;
-import com.daikit.graphql.spring.demo.data.GQLMetaData;
+import com.daikit.graphql.meta.GQLMetaModel;
 import com.daikit.graphql.utils.GQLPropertyUtils;
 
 import graphql.schema.DataFetcher;
@@ -47,8 +46,6 @@ public class GQLExecutorComponent {
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
 	@Autowired
-	private ApplicationContext applicationContext;
-	@Autowired
 	private GQLErrorProcessor gqlErrorProcessor;
 	@Autowired
 	protected DataModel dataModel;
@@ -64,28 +61,11 @@ public class GQLExecutorComponent {
 	 */
 	@PostConstruct
 	public void initialize() {
-		// final Collection<IGQLDynamicAttributeGetter<?, ?>>
-		// dynamicAttributeGetters = applicationContext
-		// .getBeansOfType(IGQLDynamicAttributeGetter.class).values().stream()
-		// .map(setter -> (IGQLDynamicAttributeGetter<?, ?>)
-		// setter).collect(Collectors.toList());
-		//
-		// final Collection<IGQLDynamicAttributeSetter<?, ?>>
-		// dynamicAttributeSetters = applicationContext
-		// .getBeansOfType(IGQLDynamicAttributeSetter.class).values().stream()
-		// .map(setter -> (IGQLDynamicAttributeSetter<?, ?>)
-		// setter).collect(Collectors.toList());
-		//
-		// final Collection<IGQLAbstractCustomMethod<?>> customMethods =
-		// applicationContext
-		// .getBeansOfType(IGQLAbstractCustomMethod.class).values().stream()
-		// .map(method -> (IGQLAbstractCustomMethod<?>)
-		// method).collect(Collectors.toList());
-
-		logger.debug("Initializing GraphQL");
-		executor = new GQLExecutor(GQLMetaData.buildMetaModel(), gqlErrorProcessor, createExecutorCallback(),
+		logger.debug("START initializing GraphQL...");
+		executor = new GQLExecutor(createMetaModel(), gqlErrorProcessor, createExecutorCallback(),
 				createGetByIdDataFetcher(), createListDataFetcher(), createSaveDataFetcher(), createDeleteDataFetcher(),
 				createCustomMethodDataFetcher(), createPropertyDataFetchers());
+		logger.debug("END initializing GraphQL");
 	}
 
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -103,13 +83,12 @@ public class GQLExecutorComponent {
 	// PRIVATE UTILS
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
+	private GQLMetaModel createMetaModel() {
+		return new GQLMetaModelBuilder().build();
+	}
+
 	private IGQLExecutorCallback createExecutorCallback() {
 		return new IGQLExecutorCallback() {
-			@Override
-			public void onBeforeExecute(graphql.ExecutionInput executionInput) {
-				logger.debug("Before execution with input : " + executionInput);
-			}
-
 			@Override
 			public void onAfterExecute(graphql.ExecutionInput executionInput, GQLExecutionResult executionResult) {
 				logger.debug("After execution with input : " + executionInput + " and result : " + executionResult);

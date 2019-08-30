@@ -9,8 +9,11 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.daikit.graphql.execution.GQLErrorProcessor;
 import com.daikit.graphql.spring.GQLRequestHandler;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 /**
  * Application config
@@ -45,7 +48,21 @@ public class ApplicationConfig {
 	public ObjectMapper createGQLObjectMapper() {
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		// Do not write null values
+		mapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
 		return mapper;
+	}
+
+	/**
+	 * Create a JSON Object writer with pretty printing
+	 *
+	 * @param objectMapper
+	 *            the {@link ObjectMapper}
+	 * @return the created {@link ObjectWriter}
+	 */
+	@Bean
+	public ObjectWriter createGraphQLObjectWriter(@Autowired ObjectMapper objectMapper) {
+		return objectMapper.writer(new DefaultPrettyPrinter());
 	}
 
 	/**
