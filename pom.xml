@@ -129,7 +129,7 @@
 		<dependency>
 			<groupId>.com.daikit</groupId>
 			<artifactId>spring-boot-starter-data-graphql</artifactId>
-			<version>1.0-SNAPSHOT</version>
+			<version>1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
