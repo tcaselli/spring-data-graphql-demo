@@ -14,7 +14,7 @@ The [java-data-graphql](https://github.com/tcaselli/java-data-graphql) library i
 * deal with paging, sorting, filtering on queries.
 * easily create "data fetchers" for linking this library to the persistence layer of your choice.
 
-### How to launch
+### How to launch the demo
 
 First, checkout the code from github.
 
@@ -30,11 +30,15 @@ java -jar target/myapplication-XXX.jar
 
 Run ```com.daikit.graphql.spring.demo.ApplicationStarter``` as a Java application
 
-### How to access the app
+### How to browse the demo
 
-Schema instrospection is available at http://localhost:8080/graphql/introspection  
-Graphiql user interface is available at http://localhost:8080/graphiql/index.html  
-GraphQL endpoint is available at http://localhost:8080/graphql/
+You are now able to browse your schema with graphiql web user interface available at http://localhost:8080/graphiql/index.html  
+
+![Graphiql web UI](/docs/doc-graphiql-01.png)
+
+You can run queries and mutations with variables. See next section for samples.
+
+![Graphiql web UI query](/docs/doc-graphiql-02.png)
 
 ### Sample queries and mutations
 
