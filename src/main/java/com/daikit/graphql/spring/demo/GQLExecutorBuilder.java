@@ -5,13 +5,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.annotation.PostConstruct;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import com.daikit.graphql.constants.GQLSchemaConstants;
 import com.daikit.graphql.data.input.GQLListLoadConfig;
@@ -35,47 +31,28 @@ import com.daikit.graphql.utils.GQLPropertyUtils;
 import graphql.schema.DataFetcher;
 
 /**
- * {@link GQLExecutorComponent} spring component
+ * Builder for {@link GQLExecutor}
  *
- * @author tcaselli
- * @version $Revision$ Last modifier: $Author$ Last commit: $Date$
+ * @author Thibaut Caselli
  */
-@Component
-public class GQLExecutorComponent {
+public class GQLExecutorBuilder {
 
 	private final Logger logger = LoggerFactory.getLogger(getClass());
 
-	@Autowired
-	private GQLErrorProcessor gqlErrorProcessor;
-	@Autowired
-	protected DataModel dataModel;
-
-	private GQLExecutor executor;
-
-	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-	// INITIALIZATION METHODS
-	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-
 	/**
-	 * Initialization method
+	 * Build {@link GQLExecutor}
+	 *
+	 * @param gqlErrorProcessor
+	 *            the {@link GQLErrorProcessor}
+	 * @param dataModel
+	 * @return the built {@link GQLExecutor}
 	 */
-	@PostConstruct
-	public void initialize() {
-		logger.debug("START initializing GraphQL...");
-		executor = new GQLExecutor(createMetaModel(), gqlErrorProcessor, createExecutorCallback(),
-				createGetByIdDataFetcher(), createListDataFetcher(), createSaveDataFetcher(), createDeleteDataFetcher(),
-				createCustomMethodDataFetcher(), createPropertyDataFetchers());
-		logger.debug("END initializing GraphQL");
-	}
-
-	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-	// GETTERS / SETTERS
-	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-
-	/**
-	 * @return the executor
-	 */
-	public GQLExecutor getExecutor() {
+	public GQLExecutor build(final GQLErrorProcessor gqlErrorProcessor, final DataModel dataModel) {
+		logger.debug("START creating GraphQL executor...");
+		final GQLExecutor executor = new GQLExecutor(createMetaModel(), gqlErrorProcessor, createExecutorCallback(),
+				createGetByIdDataFetcher(dataModel), createListDataFetcher(dataModel), createSaveDataFetcher(dataModel),
+				createDeleteDataFetcher(dataModel), createCustomMethodDataFetcher(), createPropertyDataFetchers());
+		logger.debug("END creating GraphQL executor");
 		return executor;
 	}
 
@@ -90,51 +67,53 @@ public class GQLExecutorComponent {
 	private IGQLExecutorCallback createExecutorCallback() {
 		return new IGQLExecutorCallback() {
 			@Override
-			public void onAfterExecute(graphql.ExecutionInput executionInput, GQLExecutionResult executionResult) {
+			public void onAfterExecute(final graphql.ExecutionInput executionInput,
+					final GQLExecutionResult executionResult) {
 				logger.debug("After execution with input : " + executionInput + " and result : " + executionResult);
 			}
 		};
 	}
 
-	private DataFetcher<?> createGetByIdDataFetcher() {
+	private DataFetcher<?> createGetByIdDataFetcher(final DataModel dataModel) {
 		return new GQLAbstractGetByIdDataFetcher() {
 
 			@Override
-			protected Object getById(Class<?> entityClass, String id) {
+			protected Object getById(final Class<?> entityClass, final String id) {
 				return dataModel.getById(entityClass, id);
 			}
 
 		};
 	}
 
-	private DataFetcher<GQLListLoadResult> createListDataFetcher() {
+	private DataFetcher<GQLListLoadResult> createListDataFetcher(final DataModel dataModel) {
 		return new GQLAbstractGetListDataFetcher() {
 
 			@Override
-			protected GQLListLoadResult getAll(Class<?> entityClass, GQLListLoadConfig listLoadConfig) {
+			protected GQLListLoadResult getAll(final Class<?> entityClass, final GQLListLoadConfig listLoadConfig) {
 				return dataModel.getAll(entityClass, listLoadConfig);
 			}
 
 			@Override
-			protected Object getById(Class<?> entityClass, String id) {
+			protected Object getById(final Class<?> entityClass, final String id) {
 				return dataModel.getById(entityClass, id);
 			}
 
 		};
 	}
 
-	private DataFetcher<?> createSaveDataFetcher() {
+	private DataFetcher<?> createSaveDataFetcher(final DataModel dataModel) {
 		return new GQLAbstractSaveDataFetcher<Object>() {
 
 			@Override
-			protected void save(Object entity) {
+			protected void save(final Object entity) {
 				dataModel.save(entity);
 			}
 
 			@SuppressWarnings("unchecked")
 			@Override
-			protected Object getOrCreateAndSetProperties(Class<?> entityClass,
-					GQLDynamicAttributeRegistry dynamicAttributeRegistry, Map<String, Object> fieldValueMap) {
+			protected Object getOrCreateAndSetProperties(final Class<?> entityClass,
+					final GQLDynamicAttributeRegistry dynamicAttributeRegistry,
+					final Map<String, Object> fieldValueMap) {
 				// Find or create entity
 				final String id = (String) fieldValueMap.get(GQLSchemaConstants.FIELD_ID);
 				final Optional<?> existing = StringUtils.isEmpty(id)
@@ -170,10 +149,10 @@ public class GQLExecutorComponent {
 		};
 	}
 
-	private DataFetcher<GQLDeleteResult> createDeleteDataFetcher() {
+	private DataFetcher<GQLDeleteResult> createDeleteDataFetcher(final DataModel dataModel) {
 		return new GQLAbstractDeleteDataFetcher() {
 			@Override
-			protected void delete(Class<?> entityClass, String id) {
+			protected void delete(final Class<?> entityClass, final String id) {
 				dataModel.delete(entityClass, id);
 			}
 		};

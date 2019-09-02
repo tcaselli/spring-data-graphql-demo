@@ -51,7 +51,7 @@ public class GQLMetaModelBuilder {
 	/**
 	 * Build the test GraphQL data meta entity
 	 *
-	 * @return the built {@link GQLMetaModelBuilder}
+	 * @return the built {@link GQLMetaModel}
 	 */
 	public GQLMetaModel build() {
 		final Collection<GQLEntityMetaData> entityMetaDatas = Arrays.asList(buildEntity1(), buildEntity2(),
@@ -62,6 +62,10 @@ public class GQLMetaModelBuilder {
 				buildCustomMethodQuery2(), buildCustomMethodMutation1(), buildCustomMethodQuery3());
 		return new GQLMetaModel(enumMetaDatas, entityMetaDatas, methodMetaDatas);
 	}
+
+	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
+	// PRIVATE UTILS
+	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 
 	private GQLEntityMetaData buildEntity1() {
 		final GQLEntityMetaData entity = new GQLEntityMetaData(Entity1.class.getSimpleName(), Entity1.class,
@@ -102,7 +106,7 @@ public class GQLMetaModelBuilder {
 		final IGQLDynamicAttributeGetter<Entity1, String> dynamicAttributeGetter = new GQLDynamicAttributeGetter<Entity1, String>(
 				"dynamicAttribute1") {
 			@Override
-			public String getValue(Entity1 source) {
+			public String getValue(final Entity1 source) {
 				return "dynamicValue" + source.getId();
 			}
 		};
@@ -114,7 +118,7 @@ public class GQLMetaModelBuilder {
 		final IGQLDynamicAttributeSetter<Entity1, String> dynamicAttributeSetter = new GQLDynamicAttributeSetter<Entity1, String>(
 				"dynamicAttribute2") {
 			@Override
-			public void setValue(Entity1 source, String valueToSet) {
+			public void setValue(final Entity1 source, final String valueToSet) {
 				source.setStringAttr(valueToSet);
 			}
 		};
@@ -227,7 +231,7 @@ public class GQLMetaModelBuilder {
 		final GQLCustomMethod1Arg<Entity1, String> method = new GQLCustomMethod1Arg<Entity1, String>(
 				"customMethodQuery1", false, "arg1") {
 			@Override
-			public Entity1 apply(String arg1) {
+			public Entity1 apply(final String arg1) {
 				final Entity1 result = new Entity1();
 				result.setStringAttr(arg1);
 				final EmbeddedData1 embeddedData1 = new EmbeddedData1();
@@ -245,7 +249,7 @@ public class GQLMetaModelBuilder {
 		final GQLCustomMethod2Arg<Entity1, String, EmbeddedData1> method = new GQLCustomMethod2Arg<Entity1, String, EmbeddedData1>(
 				"customMethodQuery2", false, "arg1", "arg2") {
 			@Override
-			public Entity1 apply(String arg1, EmbeddedData1 arg2) {
+			public Entity1 apply(final String arg1, final EmbeddedData1 arg2) {
 				final Entity1 result = new Entity1();
 				result.setIntAttr(5);
 				result.setStringAttr(arg1);
@@ -263,8 +267,8 @@ public class GQLMetaModelBuilder {
 		final GQLCustomMethod5Arg<Entity1, Enum1, List<String>, List<Enum1>, List<EmbeddedData1>, String> method = new GQLCustomMethod5Arg<Entity1, Enum1, List<String>, List<Enum1>, List<EmbeddedData1>, String>(
 				"customMethodQuery3", false, "arg1", "arg2", "arg3", "arg4", "arg5") {
 			@Override
-			public Entity1 apply(Enum1 arg1, List<String> arg2, List<Enum1> arg3, List<EmbeddedData1> arg4,
-					String arg5) {
+			public Entity1 apply(final Enum1 arg1, final List<String> arg2, final List<Enum1> arg3,
+					final List<EmbeddedData1> arg4, final String arg5) {
 				final Entity1 result = new Entity1();
 				result.setEnumAttr(arg1);
 				result.setStringList(arg2);
@@ -290,7 +294,7 @@ public class GQLMetaModelBuilder {
 		final GQLCustomMethod1Arg<Entity1, String> method = new GQLCustomMethod1Arg<Entity1, String>(
 				"customMethodMutation1", true, "arg1") {
 			@Override
-			public Entity1 apply(String arg1) {
+			public Entity1 apply(final String arg1) {
 				final Entity1 result = new Entity1();
 				result.setStringAttr(arg1);
 				return result;
