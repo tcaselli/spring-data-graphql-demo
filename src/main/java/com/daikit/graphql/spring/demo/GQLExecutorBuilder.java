@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,6 @@ import com.daikit.graphql.execution.GQLErrorProcessor;
 import com.daikit.graphql.execution.GQLExecutor;
 import com.daikit.graphql.execution.IGQLExecutorCallback;
 import com.daikit.graphql.meta.GQLMetaModel;
-import com.daikit.graphql.utils.GQLPropertyUtils;
 
 import graphql.schema.DataFetcher;
 
@@ -45,6 +45,7 @@ public class GQLExecutorBuilder {
 	 * @param gqlErrorProcessor
 	 *            the {@link GQLErrorProcessor}
 	 * @param dataModel
+	 *            the {@link DataModel}
 	 * @return the built {@link GQLExecutor}
 	 */
 	public GQLExecutor build(final GQLErrorProcessor gqlErrorProcessor, final DataModel dataModel) {
@@ -132,15 +133,19 @@ public class GQLExecutorBuilder {
 					if (!GQLSchemaConstants.FIELD_ID.equals(entry.getKey())) {
 						Object value = entry.getValue();
 						if (entry.getValue() instanceof Map) {
-							final Class<?> propertyType = GQLPropertyUtils.getPropertyType(entity.getClass(),
-									entry.getKey());
+							final Class<?> propertyType = FieldUtils.getField(entity.getClass(), entry.getKey(), true)
+									.getType();
 							value = getOrCreateAndSetProperties(propertyType, dynamicAttributeRegistry,
 									(Map<String, Object>) entry.getValue());
 						}
 						if (dynamicAttributeSetter.isPresent()) {
 							dynamicAttributeSetter.get().setValue(entity, value);
 						} else {
-							GQLPropertyUtils.setPropertyValue(entity, entry.getKey(), value);
+							try {
+								FieldUtils.writeField(entity, entry.getKey(), value, true);
+							} catch (final IllegalAccessException e) {
+								throw new RuntimeException(e);
+							}
 						}
 					}
 				});

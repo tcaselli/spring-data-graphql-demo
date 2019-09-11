@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
@@ -43,7 +44,6 @@ import com.daikit.graphql.spring.demo.data.Entity4;
 import com.daikit.graphql.spring.demo.data.Entity5;
 import com.daikit.graphql.spring.demo.data.Entity6;
 import com.daikit.graphql.spring.demo.data.Enum1;
-import com.daikit.graphql.utils.GQLPropertyUtils;
 
 /**
  * A data entity for tests
@@ -264,8 +264,14 @@ public class DataModel {
 			@SuppressWarnings({"rawtypes", "unchecked"})
 			@Override
 			public int compare(final Object o1, final Object o2) {
-				final Object prop1 = GQLPropertyUtils.getPropertyValue(o1, orderBy.getField());
-				final Object prop2 = GQLPropertyUtils.getPropertyValue(o2, orderBy.getField());
+				Object prop1;
+				Object prop2;
+				try {
+					prop1 = FieldUtils.readField(o1, orderBy.getField(), true);
+					prop2 = FieldUtils.readField(o2, orderBy.getField(), true);
+				} catch (final IllegalAccessException e) {
+					throw new RuntimeException(e);
+				}
 				int comparison;
 				if (prop1 instanceof Comparable) {
 					comparison = prop1 == null ? prop2 == null ? 0 : -1 : ((Comparable) prop1).compareTo(prop2);
@@ -281,10 +287,16 @@ public class DataModel {
 
 	@SuppressWarnings("unchecked")
 	private boolean isMatching(final Object entity, final GQLFilterEntry filterEntry) {
-		final Class<?> propertyType = GQLPropertyUtils.getPropertyType(entity.getClass(), filterEntry.getFieldName());
+		final Class<?> propertyType = FieldUtils.getField(entity.getClass(), filterEntry.getFieldName(), true)
+				.getType();
 		boolean matching = true;
 		if (String.class.isAssignableFrom(propertyType)) {
-			final String propertyValue = GQLPropertyUtils.getPropertyValue(entity, filterEntry.getFieldName());
+			String propertyValue;
+			try {
+				propertyValue = (String) FieldUtils.readField(entity, filterEntry.getFieldName(), true);
+			} catch (final IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
 			switch (filterEntry.getOperator()) {
 				case EQUAL :
 					matching = Objects.equals(filterEntry.getValue(), propertyValue);
@@ -327,8 +339,12 @@ public class DataModel {
 					break;
 			}
 		} else if (Integer.class.isAssignableFrom(propertyType) || int.class.isAssignableFrom(propertyType)) {
-			final Integer propertyValue = GQLPropertyUtils.<Integer>getPropertyValue(entity,
-					filterEntry.getFieldName());
+			Integer propertyValue;
+			try {
+				propertyValue = (Integer) FieldUtils.readField(entity, filterEntry.getFieldName(), true);
+			} catch (final IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
 			switch (filterEntry.getOperator()) {
 				case EQUAL :
 					matching = propertyValue.intValue() == ((Integer) filterEntry.getValue()).intValue();

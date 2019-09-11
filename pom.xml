@@ -16,7 +16,7 @@
 	<packaging>jar</packaging>
 
 	<name>com.daikit:spring-data-graphql-demo</name>
-	<description>Demo project for spring-data-graphql.</description>
+	<description>Demo project for java-data-graphql and spring-boot-starter-data-graphql.</description>
 	<inceptionYear>2019</inceptionYear>
 	<url>https://github.com/tcaselli/spring-data-graphql-demo</url>
 
@@ -123,13 +123,14 @@
 		<javajdk.version>1.8</javajdk.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<start-class>com.daikit.graphql.spring.demo.ApplicationStarter</start-class>
+		<spring-boot-starter-data-graphql.version>1.1-SNAPSHOT</spring-boot-starter-data-graphql.version>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>.com.daikit</groupId>
 			<artifactId>spring-boot-starter-data-graphql</artifactId>
-			<version>1.0</version>
+			<version>${spring-boot-starter-data-graphql.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
