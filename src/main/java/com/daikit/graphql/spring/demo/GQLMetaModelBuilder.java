@@ -3,14 +3,16 @@ package com.daikit.graphql.spring.demo;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.daikit.graphql.custommethod.GQLAbstractCustomMethod;
 import com.daikit.graphql.custommethod.GQLCustomMethod1Arg;
 import com.daikit.graphql.custommethod.GQLCustomMethod2Arg;
 import com.daikit.graphql.custommethod.GQLCustomMethod5Arg;
 import com.daikit.graphql.dynamicattribute.GQLDynamicAttributeGetter;
 import com.daikit.graphql.dynamicattribute.GQLDynamicAttributeSetter;
-import com.daikit.graphql.dynamicattribute.IGQLDynamicAttributeGetter;
-import com.daikit.graphql.dynamicattribute.IGQLDynamicAttributeSetter;
+import com.daikit.graphql.dynamicattribute.IGQLAbstractDynamicAttribute;
 import com.daikit.graphql.enums.GQLScalarTypeEnum;
 import com.daikit.graphql.meta.GQLMetaModel;
 import com.daikit.graphql.meta.attribute.GQLAttributeEntityMetaData;
@@ -19,14 +21,6 @@ import com.daikit.graphql.meta.attribute.GQLAttributeListEntityMetaData;
 import com.daikit.graphql.meta.attribute.GQLAttributeListEnumMetaData;
 import com.daikit.graphql.meta.attribute.GQLAttributeListScalarMetaData;
 import com.daikit.graphql.meta.attribute.GQLAttributeScalarMetaData;
-import com.daikit.graphql.meta.custommethod.GQLAbstractMethodMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodArgumentEntityMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodArgumentEnumMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodArgumentListEntityMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodArgumentListEnumMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodArgumentListScalarMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodArgumentScalarMetaData;
-import com.daikit.graphql.meta.custommethod.GQLMethodEntityMetaData;
 import com.daikit.graphql.meta.entity.GQLEntityMetaData;
 import com.daikit.graphql.meta.entity.GQLEnumMetaData;
 import com.daikit.graphql.spring.demo.data.AbstractEntity;
@@ -58,9 +52,7 @@ public class GQLMetaModelBuilder {
 				buildEntity3(), buildEntity4(), buildEntity5(), buildEntity6(), buildEmbeddedData1(),
 				buildEmbeddedData2(), buildEmbeddedData3());
 		final Collection<GQLEnumMetaData> enumMetaDatas = Arrays.asList(buildEnumMetaData());
-		final Collection<GQLAbstractMethodMetaData> methodMetaDatas = Arrays.asList(buildCustomMethodQuery1(),
-				buildCustomMethodQuery2(), buildCustomMethodMutation1(), buildCustomMethodQuery3());
-		return new GQLMetaModel(enumMetaDatas, entityMetaDatas, methodMetaDatas);
+		return new GQLMetaModel(enumMetaDatas, entityMetaDatas, buildDynamicAttributes(), buildCustomMethods());
 	}
 
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
@@ -102,30 +94,6 @@ public class GQLMetaModelBuilder {
 		entity.addAttribute(new GQLAttributeEntityMetaData("embeddedData1", EmbeddedData1.class).setEmbedded(true));
 		entity.addAttribute(
 				new GQLAttributeListEntityMetaData("embeddedData1s", EmbeddedData1.class).setEmbedded(true));
-
-		final IGQLDynamicAttributeGetter<Entity1, String> dynamicAttributeGetter = new GQLDynamicAttributeGetter<Entity1, String>(
-				"dynamicAttribute1") {
-			@Override
-			public String getValue(final Entity1 source) {
-				return "dynamicValue" + source.getId();
-			}
-		};
-		final GQLAttributeScalarMetaData dynamicAttrGetterAttribute = new GQLAttributeScalarMetaData(
-				dynamicAttributeGetter.getName(), GQLScalarTypeEnum.STRING);
-		dynamicAttrGetterAttribute.setDynamicAttributeGetter(dynamicAttributeGetter);
-		entity.addAttribute(dynamicAttrGetterAttribute);
-
-		final IGQLDynamicAttributeSetter<Entity1, String> dynamicAttributeSetter = new GQLDynamicAttributeSetter<Entity1, String>(
-				"dynamicAttribute2") {
-			@Override
-			public void setValue(final Entity1 source, final String valueToSet) {
-				source.setStringAttr(valueToSet);
-			}
-		};
-		final GQLAttributeScalarMetaData dynamicAttrSetterAttribute = new GQLAttributeScalarMetaData(
-				dynamicAttributeSetter.getName(), GQLScalarTypeEnum.STRING);
-		dynamicAttrSetterAttribute.setDynamicAttributeSetter(dynamicAttributeSetter);
-		entity.addAttribute(dynamicAttrSetterAttribute);
 
 		return entity;
 	}
@@ -227,9 +195,22 @@ public class GQLMetaModelBuilder {
 		return new GQLEnumMetaData(Enum1.class.getSimpleName(), Enum1.class);
 	}
 
-	private GQLAbstractMethodMetaData buildCustomMethodQuery1() {
-		final GQLCustomMethod1Arg<Entity1, String> method = new GQLCustomMethod1Arg<Entity1, String>(
-				"customMethodQuery1", false, "arg1") {
+	private List<IGQLAbstractDynamicAttribute<?>> buildDynamicAttributes() {
+		return Stream.of(new GQLDynamicAttributeGetter<Entity1, String>("dynamicAttribute1") {
+			@Override
+			public String getValue(final Entity1 source) {
+				return "dynamicValue" + source.getId();
+			}
+		}, new GQLDynamicAttributeSetter<Entity1, String>("dynamicAttribute2") {
+			@Override
+			public void setValue(final Entity1 source, final String valueToSet) {
+				source.setStringAttr(valueToSet);
+			}
+		}).collect(Collectors.toList());
+	}
+
+	private List<GQLAbstractCustomMethod<?>> buildCustomMethods() {
+		return Stream.of(new GQLCustomMethod1Arg<Entity1, String>("customMethodQuery1", false, "arg1") {
 			@Override
 			public Entity1 apply(final String arg1) {
 				final Entity1 result = new Entity1();
@@ -239,15 +220,7 @@ public class GQLMetaModelBuilder {
 				result.setEmbeddedData1(embeddedData1);
 				return result;
 			}
-		};
-		final GQLAbstractMethodMetaData metaData = new GQLMethodEntityMetaData(method, Entity1.class);
-		metaData.addArgument(new GQLMethodArgumentScalarMetaData(method.getArgumentName(0), GQLScalarTypeEnum.STRING));
-		return metaData;
-	}
-
-	private GQLAbstractMethodMetaData buildCustomMethodQuery2() {
-		final GQLCustomMethod2Arg<Entity1, String, EmbeddedData1> method = new GQLCustomMethod2Arg<Entity1, String, EmbeddedData1>(
-				"customMethodQuery2", false, "arg1", "arg2") {
+		}, new GQLCustomMethod2Arg<Entity1, String, EmbeddedData1>("customMethodQuery2", false, "arg1", "arg2") {
 			@Override
 			public Entity1 apply(final String arg1, final EmbeddedData1 arg2) {
 				final Entity1 result = new Entity1();
@@ -256,15 +229,7 @@ public class GQLMetaModelBuilder {
 				result.setEmbeddedData1(arg2);
 				return result;
 			}
-		};
-		final GQLAbstractMethodMetaData metaData = new GQLMethodEntityMetaData(method, Entity1.class);
-		metaData.addArgument(new GQLMethodArgumentScalarMetaData(method.getArgumentName(0), GQLScalarTypeEnum.STRING));
-		metaData.addArgument(new GQLMethodArgumentEntityMetaData(method.getArgumentName(1), EmbeddedData1.class));
-		return metaData;
-	}
-
-	private GQLAbstractMethodMetaData buildCustomMethodQuery3() {
-		final GQLCustomMethod5Arg<Entity1, Enum1, List<String>, List<Enum1>, List<EmbeddedData1>, String> method = new GQLCustomMethod5Arg<Entity1, Enum1, List<String>, List<Enum1>, List<EmbeddedData1>, String>(
+		}, new GQLCustomMethod5Arg<Entity1, Enum1, List<String>, List<Enum1>, List<EmbeddedData1>, String>(
 				"customMethodQuery3", false, "arg1", "arg2", "arg3", "arg4", "arg5") {
 			@Override
 			public Entity1 apply(final Enum1 arg1, final List<String> arg2, final List<Enum1> arg3,
@@ -279,29 +244,13 @@ public class GQLMetaModelBuilder {
 				}
 				return result;
 			}
-		};
-		final GQLAbstractMethodMetaData metaData = new GQLMethodEntityMetaData(method, Entity1.class);
-		metaData.addArgument(new GQLMethodArgumentEnumMetaData(method.getArgumentName(0), Enum1.class));
-		metaData.addArgument(
-				new GQLMethodArgumentListScalarMetaData(method.getArgumentName(1), GQLScalarTypeEnum.STRING));
-		metaData.addArgument(new GQLMethodArgumentListEnumMetaData(method.getArgumentName(2), Enum1.class));
-		metaData.addArgument(new GQLMethodArgumentListEntityMetaData(method.getArgumentName(3), EmbeddedData1.class));
-		metaData.addArgument(new GQLMethodArgumentScalarMetaData(method.getArgumentName(4), GQLScalarTypeEnum.STRING));
-		return metaData;
-	}
-
-	private GQLAbstractMethodMetaData buildCustomMethodMutation1() {
-		final GQLCustomMethod1Arg<Entity1, String> method = new GQLCustomMethod1Arg<Entity1, String>(
-				"customMethodMutation1", true, "arg1") {
+		}, new GQLCustomMethod1Arg<Entity1, String>("customMethodMutation1", true, "arg1") {
 			@Override
 			public Entity1 apply(final String arg1) {
 				final Entity1 result = new Entity1();
 				result.setStringAttr(arg1);
 				return result;
 			}
-		};
-		final GQLAbstractMethodMetaData metaData = new GQLMethodEntityMetaData(method, Entity1.class);
-		metaData.addArgument(new GQLMethodArgumentScalarMetaData(method.getArgumentName(0), GQLScalarTypeEnum.STRING));
-		return metaData;
+		}).collect(Collectors.toList());
 	}
 }
