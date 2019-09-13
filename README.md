@@ -4,7 +4,7 @@
 
 ## Documentation
 
-This [spring-data-graphql-demo](https://github.com/tcaselli/sring-data-graphql-demo) project is intended to provide an easy to understand usage showcase of [java-data-graphql](https://github.com/tcaselli/java-data-graphql).
+This [spring-data-graphql-demo](https://github.com/tcaselli/spring-data-graphql-demo) project is intended to provide an easy to understand usage showcase of [java-data-graphql](https://github.com/tcaselli/java-data-graphql).
 
 The [java-data-graphql](https://github.com/tcaselli/java-data-graphql) library is a layer above the great [graphql-java](https://github.com/graphql-java/graphql-java) library. It generates a graphql schema out of a given configuration which grants the possibility to :
 * execute CRUD operations on entities (getById, getAll, save, delete).
@@ -23,7 +23,7 @@ First, checkout the code from github.
 ```sh
 mvn install
 # Replace XXX with current version (example : XXX = 1.1-SNAPSHOT)
-java -jar target/myapplication-XXX.jar
+java -jar target/spring-data-graphql-demo-XXX.jar
 ```
 
 -> From your IDE
