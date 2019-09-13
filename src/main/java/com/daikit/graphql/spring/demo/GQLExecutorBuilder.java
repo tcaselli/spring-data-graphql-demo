@@ -44,13 +44,16 @@ public class GQLExecutorBuilder {
 	 *
 	 * @param gqlErrorProcessor
 	 *            the {@link GQLErrorProcessor}
+	 * @param metaModel
+	 *            the {@link GQLMetaModel}
 	 * @param dataModel
 	 *            the {@link DataModel}
 	 * @return the built {@link GQLExecutor}
 	 */
-	public GQLExecutor build(final GQLErrorProcessor gqlErrorProcessor, final DataModel dataModel) {
+	public GQLExecutor build(final GQLErrorProcessor gqlErrorProcessor, final GQLMetaModel metaModel,
+			final DataModel dataModel) {
 		logger.debug("START creating GraphQL executor...");
-		final GQLExecutor executor = new GQLExecutor(createMetaModel(), gqlErrorProcessor, createExecutorCallback(),
+		final GQLExecutor executor = new GQLExecutor(metaModel, gqlErrorProcessor, createExecutorCallback(),
 				createGetByIdDataFetcher(dataModel), createListDataFetcher(dataModel), createSaveDataFetcher(dataModel),
 				createDeleteDataFetcher(dataModel), createCustomMethodDataFetcher(), createPropertyDataFetchers());
 		logger.debug("END creating GraphQL executor");
@@ -60,10 +63,6 @@ public class GQLExecutorBuilder {
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 	// PRIVATE UTILS
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
-
-	private GQLMetaModel createMetaModel() {
-		return new GQLMetaModelBuilder().build();
-	}
 
 	private IGQLExecutorCallback createExecutorCallback() {
 		return new IGQLExecutorCallback() {

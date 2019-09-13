@@ -1,11 +1,13 @@
 package com.daikit.graphql.spring.demo;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.daikit.graphql.execution.GQLErrorProcessor;
 import com.daikit.graphql.execution.GQLExecutor;
+import com.daikit.graphql.meta.GQLMetaModel;
 
 /**
  * {@link ApplicationConfig} spring component
@@ -19,7 +21,9 @@ public class ApplicationConfig {
 	@Autowired
 	private GQLErrorProcessor gqlErrorProcessor;
 	@Autowired
-	protected DataModel dataModel;
+	private DataModel dataModel;
+	@Autowired
+	private ApplicationContext applicationContext;
 
 	// *-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-
 	// INITIALIZATION METHODS
@@ -32,6 +36,8 @@ public class ApplicationConfig {
 	 */
 	@Bean
 	public GQLExecutor createExecutor() {
-		return new GQLExecutorBuilder().build(gqlErrorProcessor, dataModel);
+		final GQLMetaModel metaModel = new GQLMetaModelBuilder().build(applicationContext);
+		return new GQLExecutorBuilder().build(gqlErrorProcessor, metaModel, dataModel);
 	}
+
 }
