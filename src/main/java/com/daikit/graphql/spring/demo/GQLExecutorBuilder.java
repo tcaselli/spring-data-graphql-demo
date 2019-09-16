@@ -10,7 +10,7 @@ import org.apache.commons.lang3.reflect.FieldUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.daikit.graphql.constants.GQLSchemaConstants;
+import com.daikit.graphql.config.GQLSchemaConfig;
 import com.daikit.graphql.data.input.GQLListLoadConfig;
 import com.daikit.graphql.data.output.GQLDeleteResult;
 import com.daikit.graphql.data.output.GQLExecutionResult;
@@ -44,18 +44,21 @@ public class GQLExecutorBuilder {
 	 *
 	 * @param gqlErrorProcessor
 	 *            the {@link GQLErrorProcessor}
+	 * @param schemaConfig
+	 *            the {@link GQLSchemaConfig}
 	 * @param metaModel
 	 *            the {@link GQLMetaModel}
 	 * @param dataModel
 	 *            the {@link DataModel}
 	 * @return the built {@link GQLExecutor}
 	 */
-	public GQLExecutor build(final GQLErrorProcessor gqlErrorProcessor, final GQLMetaModel metaModel,
-			final DataModel dataModel) {
+	public GQLExecutor build(final GQLSchemaConfig schemaConfig, final GQLMetaModel metaModel,
+			final GQLErrorProcessor gqlErrorProcessor, final DataModel dataModel) {
 		logger.debug("START creating GraphQL executor...");
-		final GQLExecutor executor = new GQLExecutor(metaModel, gqlErrorProcessor, createExecutorCallback(),
-				createGetByIdDataFetcher(dataModel), createListDataFetcher(dataModel), createSaveDataFetcher(dataModel),
-				createDeleteDataFetcher(dataModel), createCustomMethodDataFetcher(), createPropertyDataFetchers());
+		final GQLExecutor executor = new GQLExecutor(schemaConfig, metaModel, gqlErrorProcessor,
+				createExecutorCallback(), createGetByIdDataFetcher(dataModel), createListDataFetcher(dataModel),
+				createSaveDataFetcher(schemaConfig, dataModel), createDeleteDataFetcher(dataModel),
+				createCustomMethodDataFetcher(), createPropertyDataFetchers());
 		logger.debug("END creating GraphQL executor");
 		return executor;
 	}
@@ -101,7 +104,7 @@ public class GQLExecutorBuilder {
 		};
 	}
 
-	private DataFetcher<?> createSaveDataFetcher(final DataModel dataModel) {
+	private DataFetcher<?> createSaveDataFetcher(GQLSchemaConfig schemaConfig, final DataModel dataModel) {
 		return new GQLAbstractSaveDataFetcher<Object>() {
 
 			@Override
@@ -115,7 +118,7 @@ public class GQLExecutorBuilder {
 					final GQLDynamicAttributeRegistry dynamicAttributeRegistry,
 					final Map<String, Object> fieldValueMap) {
 				// Find or create entity
-				final String id = (String) fieldValueMap.get(GQLSchemaConstants.FIELD_ID);
+				final String id = (String) fieldValueMap.get(schemaConfig.getAttributeIdName());
 				final Optional<?> existing = StringUtils.isEmpty(id)
 						? Optional.empty()
 						: dataModel.getById(entityClass, id);
@@ -129,7 +132,7 @@ public class GQLExecutorBuilder {
 				fieldValueMap.entrySet().stream().forEach(entry -> {
 					final Optional<IGQLDynamicAttributeSetter<Object, Object>> dynamicAttributeSetter = dynamicAttributeRegistry
 							.getSetter(entityClass, entry.getKey());
-					if (!GQLSchemaConstants.FIELD_ID.equals(entry.getKey())) {
+					if (!schemaConfig.getAttributeIdName().equals(entry.getKey())) {
 						Object value = entry.getValue();
 						if (entry.getValue() instanceof Map) {
 							final Class<?> propertyType = FieldUtils.getField(entity.getClass(), entry.getKey(), true)

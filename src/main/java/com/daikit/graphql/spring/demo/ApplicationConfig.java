@@ -5,6 +5,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.daikit.graphql.config.GQLSchemaConfig;
 import com.daikit.graphql.execution.GQLErrorProcessor;
 import com.daikit.graphql.execution.GQLExecutor;
 import com.daikit.graphql.meta.GQLMetaModel;
@@ -19,9 +20,11 @@ import com.daikit.graphql.meta.GQLMetaModel;
 public class ApplicationConfig {
 
 	@Autowired
-	private GQLErrorProcessor gqlErrorProcessor;
+	private GQLSchemaConfig schemaConfig;
 	@Autowired
 	private DataModel dataModel;
+	@Autowired
+	private GQLErrorProcessor gqlErrorProcessor;
 	@Autowired
 	private ApplicationContext applicationContext;
 
@@ -37,7 +40,7 @@ public class ApplicationConfig {
 	@Bean
 	public GQLExecutor createExecutor() {
 		final GQLMetaModel metaModel = new GQLMetaModelBuilder().build(applicationContext);
-		return new GQLExecutorBuilder().build(gqlErrorProcessor, metaModel, dataModel);
+		return new GQLExecutorBuilder().build(schemaConfig, metaModel, gqlErrorProcessor, dataModel);
 	}
 
 }
