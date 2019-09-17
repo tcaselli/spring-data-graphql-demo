@@ -29,7 +29,8 @@ public class CustomMethodQuery3
 	}
 
 	@Override
-	public Entity1 apply(final Enum1 arg1, final List<String> arg2, final List<Enum1> arg3, final List<EmbeddedData1> arg4, final String arg5) {
+	public Entity1 apply(final Enum1 arg1, final List<String> arg2, final List<Enum1> arg3,
+			final List<EmbeddedData1> arg4, final String arg5) {
 		final Entity1 result = new Entity1();
 		result.setEnumAttr(arg1);
 		result.setStringList(arg2);
