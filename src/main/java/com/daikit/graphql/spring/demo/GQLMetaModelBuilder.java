@@ -45,7 +45,7 @@ public class GQLMetaModelBuilder {
 	 *
 	 * @return the built {@link GQLMetaModel}
 	 */
-	public GQLMetaModel build(ApplicationContext applicationContext) {
+	public GQLMetaModel build(final ApplicationContext applicationContext) {
 		final Collection<GQLEntityMetaData> entityMetaDatas = Arrays.asList(buildEntity1(), buildEntity2(),
 				buildEntity3(), buildEntity4(), buildEntity5(), buildEntity6(), buildEmbeddedData1(),
 				buildEmbeddedData2(), buildEmbeddedData3());

@@ -23,7 +23,7 @@ public class CustomMethodQuery1 extends GQLCustomMethod1Arg<Entity1, String> {
 	}
 
 	@Override
-	public Entity1 apply(String arg1) {
+	public Entity1 apply(final String arg1) {
 		final Entity1 result = new Entity1();
 		result.setStringAttr(arg1);
 		final EmbeddedData1 embeddedData1 = new EmbeddedData1();

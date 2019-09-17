@@ -104,7 +104,7 @@ public class GQLExecutorBuilder {
 		};
 	}
 
-	private DataFetcher<?> createSaveDataFetcher(GQLSchemaConfig schemaConfig, final DataModel dataModel) {
+	private DataFetcher<?> createSaveDataFetcher(final GQLSchemaConfig schemaConfig, final DataModel dataModel) {
 		return new GQLAbstractSaveDataFetcher<Object>() {
 
 			@Override
