@@ -1,7 +1,7 @@
 package com.daikit.graphql.spring.demo.data;
 
 /**
- * Entity class 5
+ * Test entity 6
  *
  * @author Thibaut Caselli
  */
